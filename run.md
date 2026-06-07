@@ -37,6 +37,16 @@ java -jar target/issueflow-0.0.1-SNAPSHOT.jar
 
 App starts on http://localhost:8080.
 
+### Interactive API docs (Swagger / OpenAPI)
+
+Once the app is running, the full API is browsable and callable from:
+
+- **Swagger UI:** http://localhost:8080/swagger-ui.html
+- **OpenAPI spec:** http://localhost:8080/v3/api-docs
+
+Use the **Authorize** button in Swagger UI to paste a JWT (from `POST /auth/login`)
+and call protected endpoints directly from the browser.
+
 ## 4. Run the tests
 
 Tests use an in-memory H2 database — **Docker is not required** for tests.
@@ -105,3 +115,22 @@ token), the app seeds a single bootstrap ADMIN on first startup via
 - **Token lifetime**: `app.jwt.expiration-seconds` (default `3600`).
 - **Logout** uses an in-memory token deny-list; it is per-instance and cleared on
   restart (tokens also expire on their own).
+
+## Notes for Windows / PowerShell
+
+- **Testing endpoints from PowerShell:** PowerShell's `curl` is an alias for
+  `Invoke-WebRequest` with different syntax. Use **`Invoke-RestMethod`** for JSON
+  requests (it sets the body length correctly), or call the real curl as
+  **`curl.exe`**. For multipart uploads (attachments, CSV import), `curl.exe -F` is
+  the most reliable. To read an error response body, use `Invoke-WebRequest` inside a
+  `try/catch` and read `$_.Exception.Response`.
+- **Clean restart (recommended before re-testing after a rebuild):**
+  1. Stop the app (`Ctrl+C`).
+  2. Confirm the port is free: `netstat -ano | findstr :8080` — if a process is
+     still listening, stop it (`taskkill /PID <pid> /F`). A `spring-boot:run` JVM can
+     outlive `Ctrl+C` and hold port 8080.
+  3. Rebuild fresh so you are not running stale classes: `mvnw.cmd clean package -DskipTests`.
+  4. Start: `mvnw.cmd spring-boot:run`.
+- **Local PostgreSQL conflict:** if you have a local PostgreSQL service installed, it
+  may occupy port 5432 and shadow the Docker container. Stop the local service (or
+  ensure only the Docker DB listens on 5432) before starting the app.

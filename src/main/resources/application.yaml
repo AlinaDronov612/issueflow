@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: issueflow
+  datasource:
+    url: jdbc:postgresql://localhost:5432/issueflow
+    username: issueflow
+    password: issueflow
+    driverClassName: org.postgresql.Driver
+    platform: postgres
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    # Hibernate creates the schema from entities first, then data.sql seeds run.
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+  servlet:
+    multipart:
+      # Kept above the 10MB business cap so the service-level size check (which
+      # returns a clean 400) is the authoritative gate; the servlet limit is a
+      # backstop that maps to 400 via MaxUploadSizeExceededException.
+      max-file-size: 15MB
+      max-request-size: 15MB
+
+# JWT settings. The secret MUST be overridden in production via the JWT_SECRET
+# env var; the default below is a dev-only fallback (HS256 needs >= 32 bytes).
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-change-me-please-override-in-prod-0123456789abcdef}
+    expiration-seconds: 3600
+  escalation:
+    # Auto-escalation scheduler. enabled=false turns the timer off entirely;
+    # interval-ms is the gap between sweeps; initial-delay-ms keeps the first run
+    # off the startup path.
+    enabled: true
+    interval-ms: 60000
+    initial-delay-ms: 60000

@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: issueflow
+  datasource:
+    url: jdbc:h2:mem:db;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+  servlet:
+    multipart:
+      # Above the 10MB business cap (matches main config) so the service-level
+      # size check is what the oversize test exercises, not the servlet limit.
+      max-file-size: 15MB
+      max-request-size: 15MB
+
+app:
+  jwt:
+    secret: test-only-secret-0123456789-0123456789-0123456789
+    expiration-seconds: 3600
+  escalation:
+    # Disable the timer in tests; escalation is driven directly/by the endpoint
+    # so assertions stay deterministic.
+    enabled: false

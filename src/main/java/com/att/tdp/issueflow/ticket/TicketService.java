@@ -25,6 +25,7 @@ import com.att.tdp.issueflow.workload.WorkloadService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TicketService {
@@ -133,8 +135,12 @@ public class TicketService {
                 .build();
         Ticket saved = ticketRepository.save(ticket);
         auditService.record(AuditAction.CREATE, AuditEntityType.TICKET, saved.getId());
+        log.info("Ticket {} created in project {} (assignee={})",
+                saved.getId(), project.getId(), saved.getAssignee() == null ? null : saved.getAssignee().getId());
         if (autoAssigned) {
             auditService.recordSystem(AuditAction.AUTO_ASSIGN, AuditEntityType.TICKET, saved.getId());
+            log.info("Ticket {} auto-assigned to least-loaded developer {}",
+                    saved.getId(), saved.getAssignee().getId());
         }
         return saved;
     }
@@ -171,6 +177,10 @@ public class TicketService {
                     && dependencyRepository.hasUnresolvedBlockers(ticketId, Status.DONE)) {
                 throw new ConflictException("ticket " + ticketId
                         + " cannot move to DONE while it has unresolved (non-DONE) blocking dependencies");
+            }
+            if (request.status() != ticket.getStatus()) {
+                log.info("Ticket {} status changed {} -> {}",
+                        ticketId, ticket.getStatus(), request.status());
             }
             ticket.setStatus(request.status());
         }
@@ -223,11 +233,18 @@ public class TicketService {
      */
     @Transactional
     public int escalateOverdueTickets() {
+        List<Ticket> candidates = ticketRepository.findEscalationCandidates(Instant.now(), Status.DONE);
         int escalated = 0;
-        for (Ticket ticket : ticketRepository.findEscalationCandidates(Instant.now(), Status.DONE)) {
+        for (Ticket ticket : candidates) {
             if (escalateOne(ticket)) {
                 escalated++;
             }
+        }
+        if (escalated > 0) {
+            log.info("Auto-escalation sweep promoted {} of {} overdue candidate ticket(s)",
+                    escalated, candidates.size());
+        } else {
+            log.debug("Auto-escalation sweep evaluated {} candidate(s); none promoted", candidates.size());
         }
         return escalated;
     }
@@ -250,9 +267,12 @@ public class TicketService {
             return false;
         }
         // Promote exactly one level; status is left untouched.
-        ticket.setPriority(Priority.values()[ticket.getPriority().ordinal() + 1]);
+        Priority from = ticket.getPriority();
+        Priority to = Priority.values()[from.ordinal() + 1];
+        ticket.setPriority(to);
         ticketRepository.save(ticket);
         auditService.recordSystem(AuditAction.AUTO_ESCALATE, AuditEntityType.TICKET, ticket.getId());
+        log.debug("Ticket {} auto-escalated {} -> {}", ticket.getId(), from, to);
         return true;
     }
 
@@ -348,6 +368,7 @@ public class TicketService {
         } catch (IOException e) {
             throw new BadRequestException("Could not read the uploaded CSV file");
         }
+        log.info("CSV import into project {} finished: {} created, {} failed", projectId, created, failed);
         return new TicketImportSummary(created, failed, errors);
     }
 

@@ -4,6 +4,7 @@ import com.att.tdp.issueflow.auth.AuthPrincipal;
 import com.att.tdp.issueflow.comment.dto.CommentResponse;
 import com.att.tdp.issueflow.comment.dto.CreateCommentRequest;
 import com.att.tdp.issueflow.comment.dto.UpdateCommentRequest;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,6 +23,7 @@ import java.util.List;
  * Comment endpoints nested under a ticket. Paths/methods match the README
  * (200 OK on create, PATCH with empty body on update).
  */
+@Tag(name = "Comments", description = "Comments on a ticket, including @mention resolution")
 @RestController
 @RequestMapping("/tickets/{ticketId}/comments")
 @RequiredArgsConstructor

@@ -6,6 +6,7 @@ import com.att.tdp.issueflow.ticket.dto.EscalationResult;
 import com.att.tdp.issueflow.ticket.dto.TicketImportSummary;
 import com.att.tdp.issueflow.ticket.dto.TicketResponse;
 import com.att.tdp.issueflow.ticket.dto.UpdateTicketRequest;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -38,6 +39,7 @@ import java.util.List;
  * {@code /import}, and {@code /deleted} can never be shadowed (which would
  * otherwise surface as a 400 "invalid value for ticketId").
  */
+@Tag(name = "Tickets", description = "Create, update, soft-delete tickets; CSV export/import; escalation")
 @RestController
 @RequestMapping("/tickets")
 @RequiredArgsConstructor

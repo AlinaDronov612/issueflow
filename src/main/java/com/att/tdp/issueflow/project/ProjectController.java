@@ -4,6 +4,7 @@ import com.att.tdp.issueflow.auth.AuthPrincipal;
 import com.att.tdp.issueflow.project.dto.CreateProjectRequest;
 import com.att.tdp.issueflow.project.dto.ProjectResponse;
 import com.att.tdp.issueflow.project.dto.UpdateProjectRequest;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +24,7 @@ import java.util.List;
  * PATCH for update). DELETE is a soft delete; listing/restoring soft-deleted
  * projects is ADMIN-only.
  */
+@Tag(name = "Projects", description = "Manage projects, soft-delete/restore, and view developer workload")
 @RestController
 @RequestMapping("/projects")
 @RequiredArgsConstructor

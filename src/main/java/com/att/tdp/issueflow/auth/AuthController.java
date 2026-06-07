@@ -3,6 +3,7 @@ package com.att.tdp.issueflow.auth;
 import com.att.tdp.issueflow.auth.dto.LoginRequest;
 import com.att.tdp.issueflow.auth.dto.LoginResponse;
 import com.att.tdp.issueflow.user.dto.UserResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Authentication endpoints. {@code POST /auth/login} is public; {@code /auth/me}
  * and {@code /auth/logout} require a valid bearer token.
  */
+@Tag(name = "Authentication", description = "Login, current user, and logout (token revocation)")
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor

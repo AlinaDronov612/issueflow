@@ -12,10 +12,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Stateless JWT security. Only {@code POST /auth/login} is public; every other
- * endpoint requires a valid bearer token. The {@link JwtAuthenticationFilter}
- * runs before the username/password filter and unauthenticated access yields a
- * 401 via {@link RestAuthenticationEntryPoint}.
+ * Stateless JWT security. Only {@code POST /auth/login} and the OpenAPI/Swagger
+ * docs endpoints are public; every other endpoint requires a valid bearer token.
+ * The {@link JwtAuthenticationFilter} runs before the username/password filter and
+ * unauthenticated access yields a 401 via {@link RestAuthenticationEntryPoint}.
  */
 @Configuration
 @EnableWebSecurity
@@ -34,6 +34,10 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        // OpenAPI spec + Swagger UI must be reachable without a token.
+                        .requestMatchers(
+                                "/swagger-ui.html", "/swagger-ui/**",
+                                "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

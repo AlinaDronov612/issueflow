@@ -3,6 +3,7 @@ package com.att.tdp.issueflow.user;
 import com.att.tdp.issueflow.user.dto.CreateUserRequest;
 import com.att.tdp.issueflow.user.dto.UpdateUserRequest;
 import com.att.tdp.issueflow.user.dto.UserResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +20,7 @@ import java.util.List;
  * User endpoints. Paths and methods match the README contract exactly, including
  * the non-RESTful {@code POST /users/update/{userId}} and 200 OK on create.
  */
+@Tag(name = "Users", description = "Manage users and view the mentions addressed to a user")
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor

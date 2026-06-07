@@ -9,6 +9,7 @@ import com.att.tdp.issueflow.common.exception.ResourceNotFoundException;
 import com.att.tdp.issueflow.ticket.Ticket;
 import com.att.tdp.issueflow.ticket.TicketRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AttachmentService {
@@ -61,6 +63,8 @@ public class AttachmentService {
                 .data(readBytes(file))
                 .build());
         auditService.record(AuditAction.CREATE, AuditEntityType.ATTACHMENT, attachment.getId());
+        log.info("Attachment {} ({}, {} bytes) uploaded to ticket {}",
+                attachment.getId(), contentType, file.getSize(), ticketId);
 
         return attachmentMapper.toResponse(attachment);
     }

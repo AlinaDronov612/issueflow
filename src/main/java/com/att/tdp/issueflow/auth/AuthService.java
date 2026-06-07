@@ -8,10 +8,12 @@ import com.att.tdp.issueflow.user.UserMapper;
 import com.att.tdp.issueflow.user.UserRepository;
 import com.att.tdp.issueflow.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -26,13 +28,18 @@ public class AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new UnauthorizedException("Invalid username or password"));
+                .orElseThrow(() -> {
+                    log.warn("Failed login attempt for username '{}' (unknown user)", request.username());
+                    return new UnauthorizedException("Invalid username or password");
+                });
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            log.warn("Failed login attempt for username '{}' (bad password)", request.username());
             throw new UnauthorizedException("Invalid username or password");
         }
 
         String token = jwtService.generateToken(user);
+        log.info("User '{}' (id {}) logged in", user.getUsername(), user.getId());
         return new LoginResponse(token, "Bearer", jwtService.getExpirationSeconds());
     }
 
